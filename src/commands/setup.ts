@@ -215,10 +215,11 @@ function getGradeColor(score: number, text: string): string {
 }
 
 function scoreBar(score: number): string {
-  const filled = Math.round(score / 10);
+  const clamped = Math.min(100, Math.max(0, score));
+  const filled = Math.min(10, Math.round(clamped / 10));
   const bar = '█'.repeat(filled) + '░'.repeat(10 - filled);
-  const color = score >= 80 ? chalk.green : score >= 50 ? chalk.yellow : chalk.red;
-  return `${color(`${String(score).padStart(3)}/100`)}  ${color(bar)}`;
+  const color = clamped >= 80 ? chalk.green : clamped >= 50 ? chalk.yellow : chalk.red;
+  return `${color(`${String(clamped).padStart(3)}/100`)}  ${color(bar)}`;
 }
 
 /**

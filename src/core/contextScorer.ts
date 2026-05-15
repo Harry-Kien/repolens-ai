@@ -202,7 +202,7 @@ export function scoreContextFile(content: string, projectFiles?: string[]): Scor
   let freshnessScore = 50;
   if (projectFiles && projectFiles.length > 0) {
     const refed = projectFiles.filter((f) => content.includes(path.basename(f)));
-    freshnessScore = Math.round((refed.length / Math.min(projectFiles.length, 20)) * 100);
+    freshnessScore = Math.min(100, Math.round((refed.length / Math.min(projectFiles.length, 20)) * 100));
     if (freshnessScore < 10) {
       issues.push({ severity: 'warning', message: 'Context file references very few project files — may be outdated' });
     }
@@ -223,10 +223,10 @@ export function scoreContextFile(content: string, projectFiles?: string[]): Scor
   if (content.length === 0) issues.push({ severity: 'error', message: 'Context file is empty' });
   if (genericCount > 5) suggestions.push(`Remove ${genericCount} generic rules that hurt agent performance`);
 
-  const overall = Math.round(
+  const overall = Math.min(100, Math.round(
     specificityScore * 0.30 + coverageScore * 0.20 + concisenessScore * 0.15 +
     freshnessScore * 0.15 + tribalKnowledgeScore * 0.20
-  );
+  ));
 
   return { overall, breakdown: { specificity: specificityScore, coverage: coverageScore,
     conciseness: concisenessScore, freshness: freshnessScore, tribalKnowledge: tribalKnowledgeScore },
