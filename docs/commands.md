@@ -1,168 +1,130 @@
 # Commands Reference — RepoLens AI v2.0
 
-## All 15 Commands
+## Quick Start
 
-### 🎯 Context Management (8 commands)
-
-| Command | Alias | Mô tả |
-|---|---|---|
-| `repolens init` | — | Tạo AGENTS.md bằng phỏng vấn + auto-detect |
-| `repolens lint` | `score` | Chấm điểm context files (5 chiều, 0-100) |
-| `repolens fix` | — | Auto-fix: xóa rules generic, dọn boilerplate |
-| `repolens sync` | — | Đồng bộ AGENTS.md → CLAUDE.md → .cursorrules → Copilot |
-| `repolens templates` | `tpl` | Browse & apply 12+ framework templates |
-| `repolens skills` | — | Tạo .cursor/skills/ cho common tasks |
-| `repolens doctor` | `check` | Health check AI dev setup |
-| `repolens dashboard` | `ui` | Local web dashboard |
-
-### 🔍 Analysis (7 commands)
-
-| Command | Alias | Mô tả |
-|---|---|---|
-| `repolens analyze` | — | Phân tích toàn diện repo |
-| `repolens architecture` | `arch` | Phân tích kiến trúc |
-| `repolens explain <topic>` | — | Giải thích module (đọc code thực) |
-| `repolens review` | — | Review changes gần đây |
-| `repolens risks` | — | Quét bảo mật & maintainability |
-| `repolens onboarding` | `onboard` | Onboarding guide |
-| `repolens generate-agents` | `agents` | Tạo AGENTS.md (legacy — dùng `init`) |
+```bash
+repolens setup    # One command — does everything
+```
 
 ---
 
-## Chi Tiết Từng Command
+## All Commands
 
-### `repolens init`
+### ⭐ Primary
 
-Tạo AGENTS.md chất lượng cao bằng cách kết hợp auto-detect + phỏng vấn developer.
+| Command | Description |
+|---|---|
+| `repolens setup` | One-click setup — analyzes project, creates AGENTS.md, syncs 6 AI tools |
+
+### 🎯 Context Management
+
+| Command | Alias | Description |
+|---|---|---|
+| `repolens init` | — | Create AGENTS.md through interactive interview |
+| `repolens lint` | `score` | Score context files (0-100, 5 dimensions) |
+| `repolens fix` | — | Auto-fix: remove generic rules, clean boilerplate |
+| `repolens sync` | — | Sync AGENTS.md → 6 AI tools |
+| `repolens templates` | `tpl` | Browse & apply 12 framework templates |
+| `repolens skills` | — | Generate .cursor/skills/ for common tasks |
+| `repolens doctor` | `check` | Health check for AI dev setup |
+| `repolens dashboard` | `ui` | Local web dashboard |
+
+### 🔍 Analysis
+
+| Command | Description |
+|---|---|
+| `repolens analyze` | Full repo analysis |
+| `repolens arch` | Architecture analysis |
+| `repolens explain <topic>` | Explain any feature by searching code |
+| `repolens review` | Review recent code changes |
+| `repolens risks` | Security & risk scanner |
+| `repolens onboard` | Developer onboarding guide |
+
+---
+
+## Command Details
+
+### `repolens setup`
+
+The **primary command**. Reads your actual code and configures all AI tools.
 
 ```bash
-repolens init       # Interactive — trả lời 10 câu hỏi
-repolens init -y    # Auto — không hỏi, dùng giá trị auto-detect
+repolens setup
 ```
 
-**Tính năng:**
-- Auto-detect framework, language, architecture
-- Đọc code thực (functions, classes, imports)
-- Phỏng vấn gotchas, conventions, critical files
-- Tự động merge framework template nếu có
-- Backup file cũ trước khi ghi đè
+**What it does:**
+1. Analyzes project (framework, architecture, code patterns)
+2. Reads package.json, tsconfig.json, .env.example
+3. Detects naming conventions, critical files, TODO/FIXME
+4. Creates AGENTS.md with project-specific context
+5. Syncs to 6 AI tools (Cursor .mdc, Cursor legacy, Claude, Copilot, Windsurf, Codex)
+6. Generates skill files for Cursor
+7. Scores quality (0-100)
 
 ### `repolens lint`
 
-Chấm điểm context files trên 5 chiều.
+Score context files on 5 dimensions.
 
 ```bash
 repolens lint
 ```
 
-**5 chiều đánh giá:**
-| Chiều | Đo gì |
+| Dimension | What it measures |
 |---|---|
-| Specificity | Rules cụ thể vs generic |
-| Coverage | Có đủ sections quan trọng không |
-| Conciseness | Không quá dài (AI struggles > 200 lines) |
-| Freshness | Có reference file thật trong project |
-| Tribal Knowledge | Thông tin AI không tự suy ra được |
-
-**Phát hiện 14 anti-patterns:** "use descriptive names", "follow best practices", "write clean code"...
-
-### `repolens fix`
-
-Auto-fix lỗi trong context files.
-
-```bash
-repolens fix             # Fix và lưu (tạo backup)
-repolens fix --dry-run   # Xem trước, không sửa
-```
-
-**Sửa gì:**
-- Xóa rules generic (14 patterns)
-- Xóa sections boilerplate (Coding Rules, Security Rules, Workflow Rules, Definition of Done)
-- Dọn blank lines thừa
-- Báo cáo score trước/sau
+| Specificity | Project-specific vs generic rules |
+| Coverage | Important areas covered |
+| Conciseness | Optimal length for AI agents |
+| Freshness | References real project files |
+| Tribal Knowledge | Info AI cannot infer on its own |
 
 ### `repolens sync`
 
-Đồng bộ AGENTS.md sang tất cả AI tools.
+Sync AGENTS.md to all AI tools.
 
 ```bash
-repolens sync            # Sync (hỏi nếu có conflict)
-repolens sync --force    # Ghi đè không hỏi
-repolens sync --dry-run  # Xem kế hoạch, không sync
+repolens sync            # Sync (asks on conflicts)
+repolens sync --force    # Overwrite without asking
+repolens sync --dry-run  # Preview only
 ```
 
-**Tạo:**
-- `CLAUDE.md` — Cho Claude Code / Codex
-- `.cursorrules` — Cho Cursor IDE
-- `.github/copilot-instructions.md` — Cho GitHub Copilot
+**Creates 6 files:**
+- `CLAUDE.md` — Claude Code / Codex CLI
+- `.cursor/rules/project.mdc` — Cursor IDE (modern .mdc with YAML frontmatter)
+- `.cursorrules` — Cursor IDE (legacy)
+- `.github/copilot-instructions.md` — GitHub Copilot
+- `.windsurfrules` — Windsurf / Codeium
+- `CODEX.md` — OpenAI Codex
+
+### `repolens fix`
+
+```bash
+repolens fix             # Fix and save (creates backup)
+repolens fix --dry-run   # Preview without saving
+```
 
 ### `repolens templates`
 
-Browse và apply templates cho framework phổ biến.
-
 ```bash
-repolens templates                    # Xem tất cả (+ gợi ý cho project)
-repolens templates --search react     # Tìm template
-repolens templates --apply nextjs     # Áp dụng template
+repolens templates                    # List all (with recommendation)
+repolens templates --search react     # Search
+repolens templates --apply nextjs     # Apply template
 ```
 
 **12 templates:** Next.js, React+Vite, Vue/Nuxt, Express, NestJS, Django, FastAPI, Laravel, React Native, HTML/CSS/JS, T3 Stack, Supabase.
 
-### `repolens skills`
-
-Tạo skill files cho Cursor IDE.
-
-```bash
-repolens skills --list   # Xem danh sách skills
-repolens skills --all    # Tạo tất cả skills phù hợp
-```
-
-**7 skills:** Create Page, Create API, Authentication, Database, Responsive UI, Deployment, Debugging.
-
-### `repolens doctor`
-
-Kiểm tra sức khỏe AI dev setup.
-
-```bash
-repolens doctor
-```
-
-**Kiểm tra 11 items:** AGENTS.md, CLAUDE.md, .cursorrules, Copilot instructions, Git, .gitignore, .env, README, tests, lint, sync status.
-
 ### `repolens dashboard`
 
-Dashboard web local.
-
 ```bash
-repolens dashboard              # Mở tại http://localhost:3141
+repolens dashboard              # Open at http://localhost:3141
 repolens dashboard --port 8080  # Custom port
-```
-
-### `repolens analyze`
-
-Phân tích toàn diện repository.
-
-```bash
-repolens analyze             # Terminal output
-repolens analyze --format md # Xuất file markdown
-repolens analyze --no-ai     # Không dùng AI
-```
-
-### `repolens explain <topic>`
-
-Tìm và giải thích module bằng cách đọc code thực.
-
-```bash
-repolens explain auth        # Giải thích module auth
-repolens explain payment     # Giải thích module payment
 ```
 
 ---
 
 ## Global Options
 
-| Option | Mô tả |
+| Option | Description |
 |---|---|
-| `--version`, `-V` | Hiển thị version |
-| `--help`, `-h` | Hiển thị help |
-| `--no-ai` | Tắt AI enhancement (analyze, arch, explain, review) |
+| `--version`, `-V` | Show version |
+| `--help`, `-h` | Show help |
+| `--no-ai` | Disable AI enhancement |
