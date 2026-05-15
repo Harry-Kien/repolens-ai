@@ -1,0 +1,57 @@
+{
+  "name": "repolens-ai",
+  "version": "2.0.0",
+  "description": "The AI Context Intelligence Platform — Your AI agents are only as good as the context you give them",
+  "author": "RepoLens AI Contributors",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/cli.js",
+  "bin": {
+    "repolens": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ai",
+    "agents-md",
+    "claude-md",
+    "cursorrules",
+    "ai-context",
+    "vibe-coding",
+    "code-analysis",
+    "developer-tools",
+    "codebase-intelligence",
+    "context-quality",
+    "ai-coding-agent",
+    "static-analysis"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/repolens/repolens-ai"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "fast-glob": "^3.3.2",
+    "openai": "^4.73.0",
+    "ora": "^8.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.6"
+  }
+}
