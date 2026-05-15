@@ -36,7 +36,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/repolens/repolens-ai"
+    "url": "https://github.com/Harry-Kien/repolens-ai"
+  },
+  "homepage": "https://github.com/Harry-Kien/repolens-ai#readme",
+  "bugs": {
+    "url": "https://github.com/Harry-Kien/repolens-ai/issues"
   },
   "engines": {
     "node": ">=18.0.0"
