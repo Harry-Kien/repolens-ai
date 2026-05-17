@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import fg from 'fast-glob';
 import { getGlobIgnorePatterns } from '../utils/paths.js';
+import { safely } from '../utils/errors.js';
 
 export interface RiskItem {
   level: 'high' | 'medium' | 'low';
@@ -24,7 +25,6 @@ const DANGEROUS_PATTERNS: { pattern: RegExp; message: string; level: RiskItem['l
   { pattern: /(?:api[_-]?key|secret[_-]?key|access[_-]?token)\s*[:=]\s*["'][a-zA-Z0-9]{8,}/gi, message: 'Hardcoded API key or secret', level: 'high', category: 'security' },
   { pattern: /sk-[a-zA-Z0-9]{20,}/g, message: 'OpenAI API key detected in source', level: 'high', category: 'security' },
   { pattern: /AKIA[0-9A-Z]{16}/g, message: 'AWS access key detected in source', level: 'high', category: 'security' },
-  { pattern: /(?:TODO|FIXME|HACK|XXX|BUG)\b/gi, message: 'TODO/FIXME marker found', level: 'low', category: 'maintainability' },
   { pattern: /(?:password|passwd)\s*[:=]\s*["'][^"']+["']/gi, message: 'Hardcoded password detected', level: 'high', category: 'security' },
 ];
 
@@ -70,28 +70,30 @@ export async function detectRisks(cwd: string): Promise<RiskReport> {
     // Skip RepoLens own files to avoid false positives from pattern definitions
     if (SELF_SKIP_PATTERNS.some(p => file.includes(p))) continue;
 
-    try {
-      const fullPath = path.join(cwd, file);
-      const stat = fs.statSync(fullPath);
+    const fullPath = path.join(cwd, file);
+    const stat = safely(() => fs.statSync(fullPath), null, 'riskFileStat');
+    if (!stat) continue;
 
-      // Large file check
-      const lineEstimate = Math.round(stat.size / 25);
-      if (lineEstimate > 500 && (file.includes('controller') || file.includes('Controller'))) {
-        risks.push({ level: 'medium', category: 'architecture', message: `Large controller file (~${lineEstimate} lines)`, file });
+    // Large file check
+    const lineEstimate = Math.round(stat.size / 25);
+    if (lineEstimate > 500 && (file.includes('controller') || file.includes('Controller'))) {
+      risks.push({ level: 'medium', category: 'architecture', message: `Large controller file (~${lineEstimate} lines)`, file });
+    }
+
+    // Only scan files under 100KB for patterns
+    if (stat.size > 100_000) continue;
+
+    const content = safely(() => fs.readFileSync(fullPath, 'utf-8'), '', 'riskFileRead');
+    for (const { pattern, message, level, category } of DANGEROUS_PATTERNS) {
+      pattern.lastIndex = 0;
+      if (pattern.test(content)) {
+        risks.push({ level, category, message, file });
       }
+    }
 
-      // Only scan files under 100KB for patterns
-      if (stat.size > 100_000) continue;
-
-      const content = fs.readFileSync(fullPath, 'utf-8');
-      for (const { pattern, message, level, category } of DANGEROUS_PATTERNS) {
-        pattern.lastIndex = 0;
-        if (pattern.test(content)) {
-          risks.push({ level, category, message, file });
-        }
-      }
-    } catch {
-      // skip unreadable files
+    const todoLine = findActionableTodoLine(content);
+    if (todoLine) {
+      risks.push({ level: 'low', category: 'maintainability', message: 'TODO/FIXME marker found', file, line: todoLine });
     }
   }
 
@@ -102,4 +104,17 @@ export async function detectRisks(cwd: string): Promise<RiskReport> {
   };
 
   return { risks, summary };
+}
+
+function findActionableTodoLine(content: string): number | null {
+  const lines = content.split('\n');
+
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index].trim();
+    if (/^(?:\/\/|#|\/\*|\*)\s*(?:TODO|FIXME|HACK|XXX|BUG)(?:\b|:)/i.test(line)) {
+      return index + 1;
+    }
+  }
+
+  return null;
 }

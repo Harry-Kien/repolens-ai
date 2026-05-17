@@ -30,10 +30,32 @@ The problem isn't missing context files — it's **bad** context files.
 RepoLens AI is a **context quality platform** that helps you:
 
 - ⭐ **Setup** AI context for 6 tools with ONE command
+- **Context** — create a paste-ready project brief for ChatGPT, Claude, Gemini, Cursor, and Antigravity
+- **Prompt** — turn vague ideas into project-aware AI coding prompts
+- **Check** — sanity-check AI-generated changes before commit
 - 📊 **Score** your context files quality (0-100, 5 dimensions)
 - 🔄 **Sync** AGENTS.md → Cursor (.mdc) → Claude → Copilot → Windsurf → Codex
 - 📚 **Templates** — 12 curated framework templates with real gotchas
 - 🔧 **Fix** — auto-remove generic rules that hurt AI performance
+
+## For Antigravity & Vibe Coding
+
+RepoLens does **not** replace Antigravity, Cursor, Claude Code, Codex, or
+Copilot. It prepares your repository so those agents stop guessing.
+
+```bash
+npx repolens-ai setup
+npx repolens-ai context
+npx repolens-ai prompt "add login with email verification"
+npx repolens-ai check
+npx repolens-ai vibe
+```
+
+`setup` creates high-signal project context. `context` gives any AI chat the
+short brief it needs. `prompt` turns an idea into a repo-aware instruction.
+`check` catches obvious AI-generated mistakes before they become project debt.
+`vibe` tells you whether the repo is ready for AI-assisted work and what to
+improve next.
 
 ### Supported AI Tools
 
@@ -63,6 +85,9 @@ cd my-project
 
 # ONE COMMAND — sets up everything
 repolens setup
+
+# Optional: see whether the repo is ready for AI-assisted work
+repolens vibe
 ```
 
 That's it. `repolens setup` will:
@@ -72,10 +97,17 @@ That's it. `repolens setup` will:
 4. ✅ Generate skill files for Cursor
 5. ✅ Score your context quality
 
+`repolens vibe` then gives you one community-readiness score across context
+quality, AI tool coverage, workflow clarity, and code health.
+
 **Want more control?** Use individual commands:
 
 ```bash
+repolens context       # Paste-ready context for any AI chat
+repolens prompt "..."  # Project-aware prompt generator
+repolens check         # Sanity-check AI-generated changes
 repolens init          # Interactive AGENTS.md creation (10 questions)
+repolens vibe          # Score vibe-coding readiness
 repolens lint          # Score your context quality (0-100)
 repolens fix           # Auto-fix generic rules
 repolens sync          # Sync to all AI tools
@@ -85,7 +117,67 @@ repolens dashboard     # Visual web dashboard
 
 ## Commands
 
-### 🆕 Context Intelligence (New in v2.0)
+### Daily Vibe Coding Loop
+
+Use these commands every day with Cursor, Antigravity, Claude, ChatGPT, Gemini,
+Codex, or any AI coding workflow.
+
+```bash
+repolens context
+repolens prompt "add image upload to user profiles"
+repolens check
+```
+
+#### `repolens context`
+
+Creates a compact project brief that can be pasted into any AI chat. It includes
+the detected stack, architecture, key directories, critical files, rules,
+commands, and gotchas.
+
+```bash
+repolens context
+repolens context --copy
+```
+
+#### `repolens prompt "<request>"`
+
+Turns a vague feature idea into a project-aware prompt. RepoLens detects the
+task intent, finds the most relevant project files, suggests likely files to
+create or update, adds feature-specific guardrails, and gives the AI agent a
+clear verification plan.
+
+```bash
+repolens prompt "add customer avatar upload"
+repolens prompt "add customer avatar upload" --copy
+```
+
+#### `repolens check`
+
+Fast guardrail after AI edits. It scans changed files for risky changes,
+TypeScript `any`, missing `use client` in React hook files, and debug logging.
+
+```bash
+repolens check
+```
+
+### 🆕 Context Intelligence
+
+#### `repolens vibe`
+
+Score whether a repository is ready for vibe coding and community use. This is
+the fastest way to see if a repo has enough context, tool coverage, workflow
+clarity, and code-health signals for AI agents to work effectively.
+
+```bash
+repolens vibe
+```
+
+**Checks:**
+- Context quality and drift
+- Coverage for AGENTS.md, Claude/Codex, Cursor, Copilot, Windsurf, and skills
+- Dev/build/lint/test scripts
+- README, CI, license, and contribution readiness
+- Security risks, circular dependencies, complexity, and documentation signals
 
 #### `repolens init`
 
@@ -217,6 +309,9 @@ You should! But RepoLens AI helps you write **better** ones:
 | You don't know if context is outdated | Freshness scoring detects stale references |
 | You can't visualize context quality | Dashboard shows scores and issues visually |
 
+See a concrete [before/after example](examples/before-after-agents.md) of weak
+generic context versus context that actually helps AI agents.
+
 ## Privacy First
 
 - ✅ **Never uploads code** — everything runs locally
@@ -229,6 +324,28 @@ You should! But RepoLens AI helps you write **better** ones:
 
 Auto-detects 15+ frameworks: Next.js, React, Vue, Angular, SvelteKit, NestJS, Express, Fastify, Hono, Laravel, Django, FastAPI, Flask, Rails, Go, Rust, Odoo, and more.
 
+## Project Structure
+
+RepoLens keeps the source tree intentionally simple for contributors and AI
+coding agents:
+
+```text
+src/
+  cli.ts              CLI entrypoint and command registration
+  commands/           One file per user-facing command
+  core/               Analysis, scoring, sync, and workflow engines
+  ai/                 Optional AI enhancement and privacy filtering
+  reporters/          Terminal and markdown output
+  templates/          Framework and tool context templates
+  utils/              Shared logging, paths, masking, and error handling
+tests/                Focused Vitest coverage for core behavior
+docs/                 Command docs, privacy notes, roadmap
+examples/             Before/after and sample context files
+```
+
+Build output lives in `dist/` and is intentionally ignored in git. The npm
+package publishes the generated `dist` bundle after `npm run build`.
+
 ## AI Enhancement (Optional)
 
 Works **perfectly without any API key**. For AI-enhanced explanations:
@@ -240,7 +357,9 @@ repolens analyze
 
 ## Roadmap
 
-- [x] 12 CLI commands
+- [x] Vibe readiness scoring command
+- [x] Daily vibe coding commands: context, prompt, check
+- [x] 18 CLI commands
 - [x] Interactive knowledge extraction
 - [x] Context quality scoring (5 dimensions)
 - [x] Cross-tool sync (AGENTS.md → CLAUDE.md → .cursorrules → Copilot)
@@ -257,15 +376,19 @@ repolens analyze
 ## Contributing
 
 ```bash
-git clone https://github.com/repolens/repolens-ai.git
+git clone https://github.com/Harry-Kien/repolens-ai.git
 cd repolens-ai
 npm install
+npm run typecheck
+npm test
 npm run build
 npm link
 
 # Test locally
+repolens context
+repolens prompt "add login"
+repolens check
 repolens doctor
-repolens lint
 ```
 
 ## License

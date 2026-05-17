@@ -18,6 +18,10 @@ interface CheckResult {
   fix?: string;
 }
 
+/**
+ * Run the full local health check for AI context, verification scripts, sync
+ * status, and common repository hygiene signals.
+ */
 export async function doctorCommand(): Promise<void> {
   const cwd = process.cwd();
   reportBrand();
@@ -131,10 +135,10 @@ export async function doctorCommand(): Promise<void> {
     const cursorFile = contextFiles.find((f) => f.type === 'cursorrules' && f.exists);
 
     let inSync = true;
-    if (claudeFile?.exists && !claudeFile.content.includes('Synced from AGENTS.md')) {
+    if (claudeFile?.exists && !isSyncedFromAgents(claudeFile.content)) {
       inSync = false;
     }
-    if (cursorFile?.exists && !cursorFile.content.includes('Synced from AGENTS.md')) {
+    if (cursorFile?.exists && !isSyncedFromAgents(cursorFile.content)) {
       inSync = false;
     }
 
@@ -181,4 +185,9 @@ export async function doctorCommand(): Promise<void> {
     logger.indent(`  ${chalk.cyan('repolens init')}  — Create AGENTS.md with tribal knowledge`);
     logger.indent(`  ${chalk.cyan('repolens sync')}  — Sync to all AI tools`);
   }
+}
+
+function isSyncedFromAgents(content: string): boolean {
+  return content.includes('Synced from AGENTS.md') ||
+    content.includes('Auto-synced from AGENTS.md');
 }

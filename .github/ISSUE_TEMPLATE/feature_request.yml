@@ -1,0 +1,43 @@
+name: Feature request
+description: Suggest an improvement for AI context, vibe readiness, or workflow support.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem should RepoLens solve?
+      description: Describe the workflow pain, especially if it affects vibe coding or multi-tool AI setup.
+      placeholder: I use Antigravity/Cursor/Claude and keep running into...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should RepoLens do?
+      placeholder: Add a command that...
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Context generation
+        - Context scoring
+        - Tool sync
+        - Vibe readiness
+        - Dashboard
+        - Templates
+        - Documentation
+        - Other
+    validations:
+      required: false
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples or references
+      description: Link to related tools, docs, repos, or workflows if useful.
+    validations:
+      required: false

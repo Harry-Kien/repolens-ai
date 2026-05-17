@@ -34,7 +34,7 @@ export const DEFAULT_IGNORE_PATTERNS: string[] = [
  * Convert ignore patterns to fast-glob ignore format.
  */
 export function getGlobIgnorePatterns(): string[] {
-  return DEFAULT_IGNORE_PATTERNS.map((p) => `**/${p}/**`);
+  return DEFAULT_IGNORE_PATTERNS.flatMap((p) => [`**/${p}`, `**/${p}/**`]);
 }
 
 /**

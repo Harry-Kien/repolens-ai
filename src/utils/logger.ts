@@ -51,13 +51,20 @@ export const logger = {
     console.log('');
   },
 
+  /** Debug message — only shown when DEBUG=repolens */
+  debug(message: string): void {
+    if (process.env.DEBUG?.includes('repolens')) {
+      console.log(chalk.dim(`  [debug] ${message}`));
+    }
+  },
+
   /** Branded header */
   brand(): void {
     console.log('');
-    console.log(chalk.bold.cyan('  🔍 RepoLens AI') + chalk.dim(' v2.0'));
-    console.log(chalk.dim('  The AI Context Intelligence Platform'));
+    console.log(chalk.bold.cyan('  🔍 RepoLens AI') + chalk.dim(' v3.1'));
+    console.log(chalk.dim('  The Context Quality Guardian for AI Coding Agents'));
     console.log(chalk.dim('  Your AI agents are only as good as the context you give them.'));
-    console.log(chalk.dim('─'.repeat(58)));
+    console.log(chalk.dim('─'.repeat(60)));
   },
 
   /** Risk level colored */

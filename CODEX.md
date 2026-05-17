@@ -1,7 +1,7 @@
-# AGENTS.md
+# CODEX.md
 
-> Instructions for AI coding agents working on this project.
-> Curated by the RepoLens AI team. Last updated: 2026-05-15.
+> Instructions for OpenAI Codex agent.
+> Synced from AGENTS.md by RepoLens AI.
 
 ## Project Overview
 
@@ -139,3 +139,7 @@ src/
 
 ---
 *Curated with [RepoLens AI](https://github.com/Harry-Kien/repolens-ai)*
+
+
+---
+*Synced from AGENTS.md by [RepoLens AI](https://github.com/repolens/repolens-ai) on 2026-05-16*

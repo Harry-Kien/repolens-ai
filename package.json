@@ -1,7 +1,7 @@
 {
   "name": "repolens-ai",
-  "version": "2.0.2",
-  "description": "The AI Context Intelligence Platform — Your AI agents are only as good as the context you give them",
+  "version": "3.1.0",
+  "description": "The Context Quality Guardian for AI Coding Agents - AST-powered analysis, drift detection, cross-tool sync",
   "author": "harry-kien <kientrantrung3@gmail.com>",
   "license": "MIT",
   "type": "module",
@@ -15,10 +15,12 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "npm run typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run build"
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "npm run lint && npm run test && npm run build"
   },
   "keywords": [
     "ai",
@@ -27,11 +29,16 @@
     "cursorrules",
     "ai-context",
     "vibe-coding",
-    "code-analysis",
-    "developer-tools",
-    "codebase-intelligence",
     "context-quality",
+    "context-engineering",
     "ai-coding-agent",
+    "prompt-engineering",
+    "ai-code-review",
+    "agentic-coding",
+    "ast-analysis",
+    "drift-detection",
+    "github-action",
+    "developer-tools",
     "static-analysis"
   ],
   "repository": {
@@ -49,11 +56,15 @@
     "chalk": "^5.3.0",
     "commander": "^12.1.0",
     "fast-glob": "^3.3.2",
-    "openai": "^4.73.0",
-    "ora": "^8.1.1"
+    "ora": "^8.1.1",
+    "ts-morph": "^28.0.0"
+  },
+  "optionalDependencies": {
+    "openai": "^4.73.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
     "vitest": "^4.1.6"

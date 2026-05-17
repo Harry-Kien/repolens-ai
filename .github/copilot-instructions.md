@@ -1,7 +1,6 @@
-# AGENTS.md
+# Copilot Instructions
 
-> Instructions for AI coding agents working on this project.
-> Curated by the RepoLens AI team. Last updated: 2026-05-15.
+> Auto-synced from AGENTS.md by RepoLens AI.
 
 ## Project Overview
 
@@ -139,3 +138,6 @@ src/
 
 ---
 *Curated with [RepoLens AI](https://github.com/Harry-Kien/repolens-ai)*
+
+
+<!-- Synced: 2026-05-16 -->

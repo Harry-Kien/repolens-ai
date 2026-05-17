@@ -1,9 +1,10 @@
-# AGENTS.md
+---
+description: Project rules for Repolens — auto-synced from AGENTS.md
+globs:
+alwaysApply: true
+---
 
-> Instructions for AI coding agents working on this project.
-> Curated by the RepoLens AI team. Last updated: 2026-05-15.
-
-## Project Overview
+# Project Overview
 
 RepoLens AI is a CLI tool — The Context Quality Guardian for AI Coding Agents.
 It helps developers manage AI context files (AGENTS.md, CLAUDE.md, .cursorrules)
@@ -16,7 +17,7 @@ using **AST-powered analysis**, **drift detection**, and **cross-tool sync**.
 - **Build Tool:** tsup (single-file bundle to `dist/cli.js`)
 - **Key Dependencies:** ts-morph (AST analysis), commander, chalk, ora
 
-## Commands
+# Commands
 
 - **Build:** `npm run build`
 - **Dev:** `npm run dev` (tsup --watch)
@@ -27,7 +28,7 @@ using **AST-powered analysis**, **drift detection**, and **cross-tool sync**.
 - **Smart prompt:** `node dist/cli.js prompt "add feature"`
 - **AI change check:** `node dist/cli.js check`
 
-## Architecture Decisions
+# Architecture Decisions
 
 - **Offline-first**: Static analysis works without any API key.
   AI enhancement is optional (openai is an optionalDependency).
@@ -41,7 +42,7 @@ using **AST-powered analysis**, **drift detection**, and **cross-tool sync**.
 - **Error handling**: Use `safely()` and `safelyAsync()` from `utils/errors.ts`
   instead of empty catch blocks. All commands use `withErrorHandler()`.
 
-## Gotchas & Known Issues
+# Gotchas & Known Issues
 
 - `riskDetector.ts` has a `SELF_SKIP_PATTERNS` array — always add new core
   files that contain regex patterns to this array to avoid false positives.
@@ -59,7 +60,7 @@ using **AST-powered analysis**, **drift detection**, and **cross-tool sync**.
 - The shebang `#!/usr/bin/env node` is added by tsup banner config. Do NOT
   add it in the source `cli.ts` or it will be duplicated and crash on Node v24+.
 
-## Key Structure
+# Key Structure
 
 ```
 src/
@@ -98,7 +99,7 @@ src/
     └── masks.ts               # Secret masking
 ```
 
-## Critical Files (modify carefully)
+# Critical Files (modify carefully)
 
 - `src/cli.ts` — All 18 commands registered here. Changes affect every command.
 - `src/core/dailyWorkflow.ts` — Daily-use context/prompt/check engine. Changes
@@ -113,7 +114,7 @@ src/
 - `src/reporters/terminalReporter.ts` — Shared CLI output surface used by most
   commands. Changes affect user-facing messages, spinner behavior, and reports.
 
-## Conventions
+# Conventions
 
 - All imports use `.js` extension (ESM requirement with TypeScript)
 - All core modules export a primary function matching the filename
@@ -121,9 +122,9 @@ src/
 - Error handling: use `safely()` from `utils/errors.ts` (never empty catch)
 - Naming: camelCase functions, PascalCase types/interfaces, UPPER_CASE constants
 
-## Rules
+# Rules
 
-### Do Not
+## Do Not
 - Do not add heavyweight dependencies (keep the install lightweight)
 - Do not send file contents to any external API without privacyFilter
 - Do not use `console.log` — use `logger` from `utils/logger.ts`
@@ -131,7 +132,7 @@ src/
 - Do not add shebang in `src/cli.ts` — tsup adds it via banner config
 - Do not modify `SELF_SKIP_PATTERNS` in riskDetector without reason
 
-### Testing
+## Testing
 - Tests use vitest — run with `npm test`
 - All new core/ modules MUST have corresponding test files in `tests/`
 - AST tests should use `beforeAll` to avoid expensive re-analysis

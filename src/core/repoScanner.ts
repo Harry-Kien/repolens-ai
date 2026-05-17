@@ -95,7 +95,7 @@ export async function scanRepository(cwd: string): Promise<ScanResult> {
   const files = await fg('**/*', {
     cwd,
     ignore: ignorePatterns,
-    dot: false,
+    dot: true,
     onlyFiles: true,
     followSymbolicLinks: false,
   });

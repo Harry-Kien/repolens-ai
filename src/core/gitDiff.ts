@@ -60,7 +60,11 @@ export function analyzeGitDiff(cwd: string): GitDiffResult {
       cwd, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'],
     }).trim();
     const stagedFiles = stagedOutput ? stagedOutput.split('\n').filter(Boolean) : [];
-    result.changedFiles = [...new Set([...result.changedFiles, ...stagedFiles])];
+    const untrackedOutput = execSync('git ls-files --others --exclude-standard', {
+      cwd, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'],
+    }).trim();
+    const untrackedFiles = untrackedOutput ? untrackedOutput.split('\n').filter(Boolean) : [];
+    result.changedFiles = [...new Set([...result.changedFiles, ...stagedFiles, ...untrackedFiles])];
 
     if (result.changedFiles.length === 0) {
       result.summary = 'No uncommitted changes detected';

@@ -1,39 +1,61 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to RepoLens AI are documented here.
+
+## [3.1.0] - 2026-05-17
+
+### Added
+
+- Daily vibe-coding workflow:
+  - `repolens context` for paste-ready project briefs.
+  - `repolens prompt "<request>"` for intent-aware AI coding prompts.
+  - `repolens check` for fast post-AI-edit sanity checks.
+  - `repolens vibe` for community and AI-readiness scoring.
+- Prompt intent detection for auth, upload, payment, API, UI, database,
+  quality, and documentation work.
+- Vibe readiness scoring across context quality, AI tool coverage, workflow
+  clarity, and code health.
+- Public repo polish: issue templates, PR template, contributing guide,
+  security policy, and clearer command docs.
+
+### Changed
+
+- CLI entrypoint now highlights the daily context/prompt/check workflow.
+- `lint` is backed by `typecheck` for clearer npm script semantics.
+- AI-generated change checks now include untracked files so pre-commit review is
+  harder to bypass by accident.
+
+### Fixed
+
+- Reduced false positives in quick checks and risk scanning.
+- Improved Windows path handling and dotfile scanning for AI tool files.
+
+## [3.0.0] - 2026-05-16
+
+### Added
+
+- AST-powered analysis through `ts-morph`.
+- Dependency graph and circular dependency detection.
+- Complexity, naming convention, and unused export signals.
+- Context drift detection between source changes and AI context files.
 
 ## [2.0.0] - 2026-05-15
 
-### 🚀 Major Release — AI Context Intelligence Platform
+### Added
 
-#### Added
-- **Smart Context Engine** — reads actual code (package.json, tsconfig, .env.example, imports, function names) to generate project-specific AGENTS.md automatically
-- **`repolens setup`** — one-click command that configures 6 AI tools simultaneously
-- **Cursor .mdc support** — modern format with YAML frontmatter (`alwaysApply`, `description`, `globs`)
-- **6-tool sync** — AGENTS.md → Cursor .mdc + Cursor legacy + Claude Code + GitHub Copilot + Windsurf + OpenAI Codex
-- **Quality scoring** — 5-dimension scoring (Specificity, Coverage, Conciseness, Freshness, Tribal Knowledge)
-- **Auto-fix** — detects and removes generic rules that reduce AI performance
-- **12 framework templates** — Next.js, React, Vue, Django, FastAPI, Laravel, Express, NestJS, Rails, Go, Rust, Flutter
-- **Skill file generation** — `.cursor/skills/` for debugging, deployment, page creation, API endpoints
-- **Interactive init** — 10-question interview for generating high-quality AGENTS.md
-- **Web dashboard** — local visual dashboard for context quality overview
-- **Doctor command** — health check for AI development setup
-- **GitHub Actions CI** — automated testing on 3 OS × 3 Node versions
-- **26 test cases** — covering contextScorer, contextSyncer, and smartContext engines
-
-#### Architecture
-- Node.js CLI (TypeScript, ESM)
-- Single-file bundle via tsup (199KB)
-- Zero-config, offline-first, privacy-first
-- 5 runtime dependencies only
+- One-command setup for AGENTS.md and AI tool sync.
+- Cursor MDC, Cursor legacy, Claude Code, GitHub Copilot, Windsurf, and Codex
+  context outputs.
+- Five-dimension context quality scoring.
+- Auto-fix for generic rules and boilerplate.
+- Framework templates and Cursor skill file generation.
+- Interactive init, web dashboard, doctor command, and CI workflow.
 
 ## [1.0.0] - 2026-05-14
 
-### Initial Release
-- Basic repo scanning and analysis
-- Framework detection (15+ frameworks)
-- Architecture analysis
-- Risk detection
-- AGENTS.md generation
-- CLAUDE.md and .cursorrules sync (3 targets)
-- Terminal and markdown reporters
+### Added
+
+- Repository scanning and analysis.
+- Framework and architecture detection.
+- Risk scanning and git diff review.
+- Initial AGENTS.md generation and basic context sync.

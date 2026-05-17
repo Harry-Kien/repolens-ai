@@ -1,0 +1,60 @@
+name: Bug report
+description: Report something that is broken or confusing.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve RepoLens. Please include enough detail for us to reproduce the issue.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the bug and what you expected instead.
+      placeholder: I ran `repolens setup` and...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: RepoLens version
+      placeholder: "3.0.0"
+    validations:
+      required: false
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version
+      placeholder: "node -v"
+    validations:
+      required: false
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS
+        - Windows
+        - Linux
+        - Other
+    validations:
+      required: false
+  - type: textarea
+    id: commands
+    attributes:
+      label: Commands run
+      render: shell
+      placeholder: |
+        npx repolens-ai setup
+        npx repolens-ai vibe
+    validations:
+      required: false
+  - type: textarea
+    id: output
+    attributes:
+      label: Relevant output
+      description: Please redact secrets before pasting logs.
+      render: text
+    validations:
+      required: false
