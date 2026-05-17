@@ -21,7 +21,7 @@ using **AST-powered analysis**, **drift detection**, and **cross-tool sync**.
 - **Build:** `npm run build`
 - **Dev:** `npm run dev` (tsup --watch)
 - **Lint:** `npm run lint` (tsc --noEmit)
-- **Test:** `npm test` (vitest — 5 test files, 39 test cases)
+- **Test:** `npm test` (vitest — 10 test files, 53 test cases)
 - **Test with coverage:** `npm run test:coverage`
 - **Daily context:** `node dist/cli.js context`
 - **Smart prompt:** `node dist/cli.js prompt "add feature"`

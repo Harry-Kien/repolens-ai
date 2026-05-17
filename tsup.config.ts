@@ -9,6 +9,7 @@ export default defineConfig({
   splitting: false,
   sourcemap: false,
   dts: false,
+  external: ['openai'],
   banner: {
     js: '#!/usr/bin/env node',
   },

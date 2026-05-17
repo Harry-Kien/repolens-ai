@@ -458,8 +458,13 @@ function findRelatedFiles(bundle: DailyContextBundle, request: string, intent: P
   const terms = extractTerms(request);
   const wantsTests = intent.id === 'quality' || terms.some((term) => ['test', 'tests', 'coverage', 'spec'].includes(term));
   const contentByPath = new Map(bundle.files.map((file) => [file.path, file]));
-  const criticalFiles = new Set(bundle.smart.criticalFiles.map((file) => file.path));
-  const scored = bundle.scan.fileTree
+  const promptCandidateFiles = bundle.scan.fileTree.filter(isPromptCandidateFile);
+  const criticalFiles = new Set(
+    bundle.smart.criticalFiles
+      .map((file) => file.path)
+      .filter(isPromptCandidateFile),
+  );
+  const scored = promptCandidateFiles
     .map((file) => ({
       file,
       score: scoreFileForPrompt(file, contentByPath.get(file), terms, intent, wantsTests, criticalFiles.has(file)),
@@ -470,6 +475,7 @@ function findRelatedFiles(bundle: DailyContextBundle, request: string, intent: P
   const focused = scored.map((item) => item.file);
   const criticalMatches = bundle.smart.criticalFiles
     .map((file) => file.path)
+    .filter(isPromptCandidateFile)
     .filter((file) => focused.includes(file) || matchesAnyPromptSignal(file, terms, intent));
 
   return Array.from(new Set([...criticalMatches, ...focused])).slice(0, 12);
@@ -661,7 +667,19 @@ function isCodeFile(file: string): boolean {
 }
 
 function isDocumentationFile(file: string): boolean {
-  return /\.(md|mdc|txt)$/.test(file) || file.includes('.cursor/skills/');
+  return /\.(md|mdc|txt|docx|pdf)$/.test(file) || file.includes('.cursor/skills/');
+}
+
+function isPromptCandidateFile(file: string): boolean {
+  const lower = file.toLowerCase();
+  const basename = path.basename(lower);
+
+  if (basename.startsWith('~$')) return false;
+  if (lower.includes('/~$')) return false;
+  if (/\.(docx|doc|pdf|png|jpg|jpeg|gif|webp|ico|zip|tar|gz|tgz|7z|exe|dll|so|dylib)$/i.test(lower)) return false;
+  if (lower.endsWith('.lock') || lower.endsWith('package-lock.json')) return false;
+
+  return true;
 }
 
 function isAllowedConsoleFile(file: string): boolean {

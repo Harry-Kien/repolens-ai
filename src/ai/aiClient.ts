@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import type OpenAI from 'openai';
 
 let client: OpenAI | null = null;
 
@@ -12,9 +12,10 @@ export function isAiAvailable(): boolean {
 /**
  * Get or create OpenAI client.
  */
-function getClient(): OpenAI {
+async function getClient(): Promise<OpenAI> {
   if (!client) {
-    client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const { default: OpenAIClient } = await import('openai');
+    client = new OpenAIClient({ apiKey: process.env.OPENAI_API_KEY });
   }
   return client;
 }
@@ -30,7 +31,7 @@ export async function enhance(
   if (!isAiAvailable()) return null;
 
   try {
-    const ai = getClient();
+    const ai = await getClient();
     const response = await ai.chat.completions.create({
       model: process.env.REPOLENS_AI_MODEL || 'gpt-4o-mini',
       messages: [

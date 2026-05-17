@@ -20,7 +20,7 @@ export async function explainCommand(topic: string, options: { ai?: boolean }): 
     const framework = detectFramework(cwd);
     const { classified } = classifyFiles(scan.fileTree);
 
-    // NEW v2.0: Read actual file contents for deeper search
+    // Read actual file contents for deeper search.
     spinner.text = `Reading code contents for "${topic}"...`;
     const codeContents = await readCodeContents(cwd);
     const contentMatches = findRelatedByContent(codeContents, topic);
@@ -88,7 +88,7 @@ export async function explainCommand(topic: string, options: { ai?: boolean }): 
     // Report findings
     logger.section('🔍', `Explaining: ${topic}`);
 
-    // NEW v2.0: Show functions and classes found by content reader
+    // Show functions and classes found by content reader.
     const matchedContents = contentMatches.slice(0, 10);
     if (matchedContents.length > 0) {
       logger.blank();

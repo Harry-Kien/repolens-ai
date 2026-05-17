@@ -403,6 +403,6 @@ MIT © RepoLens AI Contributors
 
 *Stop guessing. Start curating.*
 
-[Get Started](#install) · [Report Bug](https://github.com/repolens/repolens-ai/issues) · [Request Feature](https://github.com/repolens/repolens-ai/issues)
+[Get Started](#install) · [Report Bug](https://github.com/Harry-Kien/repolens-ai/issues) · [Request Feature](https://github.com/Harry-Kien/repolens-ai/issues)
 
 </div>

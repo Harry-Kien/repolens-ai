@@ -1,6 +1,5 @@
 import * as http from 'node:http';
 import * as path from 'node:path';
-import * as fs from 'node:fs';
 import { reportBrand } from '../reporters/terminalReporter.js';
 import { logger } from '../utils/logger.js';
 import chalk from 'chalk';
@@ -9,6 +8,9 @@ import chalk from 'chalk';
  * Dashboard command — Launch a beautiful local web dashboard.
  * Provides visual context management, quality scores, and sync status.
  */
+
+const DASHBOARD_HOST = '127.0.0.1';
+const DASHBOARD_VERSION = 'v3.1.1';
 
 export async function dashboardCommand(options: { port?: number }): Promise<void> {
   const cwd = process.cwd();
@@ -23,50 +25,51 @@ export async function dashboardCommand(options: { port?: number }): Promise<void
   const apiHandler = await createApiHandler(cwd);
 
   const server = http.createServer(async (req, res) => {
-    const url = new URL(req.url || '/', `http://localhost:${port}`);
+    const url = new URL(req.url || '/', `http://${DASHBOARD_HOST}:${port}`);
 
-    // CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('Cache-Control', 'no-store');
 
     if (req.method === 'OPTIONS') {
-      res.writeHead(200);
+      res.writeHead(204);
       res.end();
       return;
     }
 
     // API routes
     if (url.pathname.startsWith('/api/')) {
-      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
       try {
         const data = await apiHandler(url.pathname, cwd);
         res.writeHead(200);
         res.end(JSON.stringify(data));
-      } catch (err: any) {
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
         res.writeHead(500);
-        res.end(JSON.stringify({ error: err.message }));
+        res.end(JSON.stringify({ error: message }));
       }
       return;
     }
 
     // Serve dashboard HTML
-    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.writeHead(200);
     res.end(getDashboardHTML(cwd));
   });
 
-  server.listen(port, () => {
-    logger.success(`Dashboard running at ${chalk.cyan(`http://localhost:${port}`)}`);
+  server.listen(port, DASHBOARD_HOST, () => {
+    logger.success(`Dashboard running at ${chalk.cyan(`http://${DASHBOARD_HOST}:${port}`)}`);
     logger.blank();
     logger.indent(chalk.dim('Press Ctrl+C to stop'));
   });
 
-  server.on('error', (err: any) => {
-    if (err.code === 'EADDRINUSE') {
+  server.on('error', (err) => {
+    const error = err as NodeJS.ErrnoException;
+    if (error.code === 'EADDRINUSE') {
       logger.error(`Port ${port} is in use. Try: repolens dashboard --port ${port + 1}`);
     } else {
-      logger.error(err.message);
+      logger.error(error.message);
     }
     process.exit(1);
   });
@@ -83,7 +86,7 @@ async function createApiHandler(cwd: string) {
   const { readCodeContents, summarizeContents } = await import('../core/contentReader.js');
 
   // Cache results
-  let cache: Record<string, { data: any; time: number }> = {};
+  let cache: Record<string, { data: unknown; time: number }> = {};
   const CACHE_TTL = 30_000; // 30s cache
 
   return async (pathname: string, projectCwd: string) => {
@@ -92,7 +95,7 @@ async function createApiHandler(cwd: string) {
       return cache[pathname].data;
     }
 
-    let data: any;
+    let data: unknown;
 
     switch (pathname) {
       case '/api/overview': {
@@ -137,18 +140,17 @@ async function createApiHandler(cwd: string) {
 }
 
 function getDashboardHTML(cwd: string): string {
-  const projectName = path.basename(cwd);
+  const projectName = escapeHtml(path.basename(cwd));
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RepoLens AI — ${projectName}</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<title>RepoLens AI - ${projectName}</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a28;--surface3:#222236;--border:#2a2a44;--text:#e8e8f0;--text2:#9898b0;--text3:#606080;--accent:#6366f1;--accent2:#818cf8;--green:#22c55e;--yellow:#eab308;--red:#ef4444;--cyan:#06b6d4;--gradient:linear-gradient(135deg,#6366f1,#8b5cf6,#06b6d4)}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 .header{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:12px 32px;display:flex;align-items:center;justify-content:space-between}
 .logo{font-size:20px;font-weight:800;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:flex;align-items:center;gap:10px}
 .logo span{font-size:24px;-webkit-text-fill-color:initial}
@@ -202,7 +204,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 <body>
 <div class="header">
   <div class="logo"><span>🔍</span> RepoLens AI <span class="project-name">— ${projectName}</span></div>
-  <div style="color:var(--text3);font-size:12px">v2.0 · Context Intelligence Platform</div>
+  <div style="color:var(--text3);font-size:12px">${DASHBOARD_VERSION} · Context Intelligence Platform</div>
 </div>
 <div class="main" id="app">
   <div class="loading" id="loading"><div class="spinner"></div>Analyzing your codebase...</div>
@@ -210,6 +212,15 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 <script>
 const API = '';
 let data = {};
+
+function esc(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 async function fetchAll() {
   try {
@@ -250,8 +261,8 @@ function render() {
   // Stats row
   html += '<div class="grid">';
   html += '<div class="card"><div class="card-title">📊 Project</div>';
-  html += '<div class="stat">'+scan.totalFiles+'</div><div class="stat-label">files · '+fw.framework+' ('+fw.language+')</div>';
-  html += '<div style="margin-top:12px;font-size:13px;color:var(--text2)">'+arch.style+'</div></div>';
+  html += '<div class="stat">'+scan.totalFiles+'</div><div class="stat-label">files · '+esc(fw.framework)+' ('+esc(fw.language)+')</div>';
+  html += '<div style="margin-top:12px;font-size:13px;color:var(--text2)">'+esc(arch.style)+'</div></div>';
 
   html += '<div class="card"><div class="card-title">🧠 Code Intelligence</div>';
   html += '<div class="stat">'+content.totalFunctions+'</div><div class="stat-label">functions · '+content.totalClasses+' classes · '+content.totalLinesOfCode+' LOC</div>';
@@ -271,7 +282,7 @@ function render() {
     for (const f of context.files) {
       const s = f.score;
       html += '<div class="card">';
-      html += '<div class="card-title">'+f.path+'</div>';
+      html += '<div class="card-title">'+esc(f.path)+'</div>';
       html += ringSVG(s.overall);
       html += '<div class="bar-chart" style="margin-top:16px">';
       const metrics = [
@@ -293,7 +304,7 @@ function render() {
         html += '<ul class="issues-list">';
         for (const issue of s.issues.slice(0,8)) {
           const ic = issue.severity==='error'?'🔴':issue.severity==='warning'?'🟡':'🔵';
-          html += '<li><span class="issue-icon">'+ic+'</span><span>'+issue.message+'</span></li>';
+          html += '<li><span class="issue-icon">'+ic+'</span><span>'+esc(issue.message)+'</span></li>';
         }
         html += '</ul>';
       }
@@ -313,8 +324,8 @@ function render() {
     const m = context.missing.find(x=>x.type===t.type);
     const exists = !!f;
     html += '<div class="context-card">';
-    html += '<div class="type">'+t.label+'</div>';
-    html += '<div class="status">'+t.desc+'</div>';
+    html += '<div class="type">'+esc(t.label)+'</div>';
+    html += '<div class="status">'+esc(t.desc)+'</div>';
     html += '<div style="margin-top:8px"><span class="tag '+(exists?'pass':'missing')+'">'+(exists?'✓ Active':'✗ Missing')+'</span></div>';
     if (f) html += '<div style="margin-top:6px;font-size:12px;color:var(--text3)">Score: '+f.score.overall+'/100</div>';
     html += '</div>';
@@ -327,7 +338,7 @@ function render() {
     html += '<div class="card"><ul class="issues-list">';
     for (const r of risks.risks.slice(0,15)) {
       const ic = r.level==='high'?'🔴':r.level==='medium'?'🟡':'🟢';
-      html += '<li><span class="issue-icon">'+ic+'</span><span>'+r.message+(r.file?' <span style="color:var(--text3)">— '+r.file+'</span>':'')+'</span></li>';
+      html += '<li><span class="issue-icon">'+ic+'</span><span>'+esc(r.message)+(r.file?' <span style="color:var(--text3)">— '+esc(r.file)+'</span>':'')+'</span></li>';
     }
     html += '</ul></div>';
   }
@@ -339,7 +350,7 @@ function render() {
     const maxLines = content.largestFiles[0]?.lines || 1;
     for (const f of content.largestFiles.slice(0,8)) {
       const pct = Math.round((f.lines/maxLines)*100);
-      html += '<div class="bar-item"><div class="bar-label" style="width:200px;font-size:11px" title="'+f.path+'">'+f.path.split('/').pop()+'</div>';
+      html += '<div class="bar-item"><div class="bar-label" style="width:200px;font-size:11px" title="'+esc(f.path)+'">'+esc(f.path.split('/').pop())+'</div>';
       html += '<div class="bar-track"><div class="bar-fill" style="width:'+pct+'%;background:var(--accent2)"></div></div>';
       html += '<div class="bar-value" style="color:var(--text2)">'+f.lines+'</div></div>';
     }
@@ -356,4 +367,13 @@ fetchAll();
 </script>
 </body>
 </html>`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }

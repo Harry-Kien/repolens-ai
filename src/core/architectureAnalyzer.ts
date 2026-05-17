@@ -126,6 +126,7 @@ function inferDataFlow(cats: Record<FileCategory, string[]>, fw: string): string
 
 function findWeakPoints(cats: Record<FileCategory, string[]>): string[] {
   const points: string[] = [];
+  const hasTypedSource = hasTypeCoverage(cats);
   if (cats.test.length === 0) points.push('No test files detected — code quality is unverified');
   if (cats.middleware.length === 0 && cats.controller.length > 0) {
     points.push('No middleware layer — auth/validation may be missing');
@@ -133,7 +134,7 @@ function findWeakPoints(cats: Record<FileCategory, string[]>): string[] {
   if (cats.service.length === 0 && cats.controller.length > 3) {
     points.push('Controllers without service layer — business logic may be coupled to HTTP layer');
   }
-  if (cats.type.length === 0 && (cats.controller.length + cats.service.length + (cats.command?.length || 0)) > 5) {
+  if (!hasTypedSource && (cats.controller.length + cats.service.length + (cats.command?.length || 0)) > 5) {
     points.push('No type definitions — lack of type safety');
   }
   if (cats.config.length === 0) points.push('No explicit configuration files found');
@@ -143,6 +144,7 @@ function findWeakPoints(cats: Record<FileCategory, string[]>): string[] {
 
 function generateSuggestions(cats: Record<FileCategory, string[]>, fw: string): string[] {
   const s: string[] = [];
+  const hasTypedSource = hasTypeCoverage(cats);
   if (cats.test.length === 0) s.push('Add unit tests for critical business logic');
   if (cats.middleware.length === 0 && cats.controller.length > 0) {
     s.push('Consider adding auth and validation middleware');
@@ -150,10 +152,18 @@ function generateSuggestions(cats: Record<FileCategory, string[]>, fw: string): 
   if (cats.service.length === 0 && cats.controller.length > 2) {
     s.push('Extract business logic into service classes');
   }
-  if (cats.type.length === 0) s.push('Add TypeScript interfaces or type definitions');
+  if (!hasTypedSource) s.push('Add TypeScript interfaces or type definitions');
   if (cats.documentation.length < 2) s.push('Add README and API documentation');
   if (cats.migration.length === 0 && cats.model.length > 0) {
     s.push('Consider using database migrations for schema management');
   }
   return s;
+}
+
+function hasTypeCoverage(cats: Record<FileCategory, string[]>): boolean {
+  if (cats.type.length > 0) return true;
+
+  return Object.values(cats)
+    .flat()
+    .some((file) => /\.(ts|tsx)$/i.test(file) && !/\.d\.ts$/i.test(file));
 }
