@@ -1,6 +1,6 @@
 {
   "name": "repolens-ai",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "The Context Quality Guardian for AI Coding Agents - AST-powered analysis, drift detection, cross-tool sync",
   "author": "harry-kien <kientrantrung3@gmail.com>",
   "license": "MIT",
