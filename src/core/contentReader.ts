@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import fg from 'fast-glob';
 import { getGlobIgnorePatterns } from '../utils/paths.js';
+import { safely } from '../utils/errors.js';
 
 /**
  * Content-aware file reader.
@@ -64,17 +65,16 @@ export async function readCodeContents(cwd: string): Promise<FileContent[]> {
   const results: FileContent[] = [];
 
   for (const file of codeFiles.slice(0, MAX_FILES_TO_READ)) {
-    try {
+    const parsed = safely(() => {
       const fullPath = path.join(cwd, file);
       const stat = fs.statSync(fullPath);
-      if (stat.size > MAX_FILE_SIZE) continue;
+      if (stat.size > MAX_FILE_SIZE) return null;
 
       const content = fs.readFileSync(fullPath, 'utf-8');
-      const parsed = parseFileContent(file, content);
-      results.push(parsed);
-    } catch {
-      // Skip unreadable files
-    }
+      return parseFileContent(file, content);
+    }, null, `contentReader:${file}`);
+
+    if (parsed) results.push(parsed);
   }
 
   return results;

@@ -60,7 +60,7 @@ function toClaudeMd(agentsContent: string): string {
 
   sections.push('');
   sections.push('---');
-  sections.push(`*Synced from AGENTS.md by [RepoLens AI](https://github.com/repolens/repolens-ai) on ${new Date().toISOString().split('T')[0]}*`);
+  sections.push(`*Synced from AGENTS.md by [RepoLens AI](https://github.com/Harry-Kien/repolens-ai) on ${new Date().toISOString().split('T')[0]}*`);
 
   return sections.join('\n');
 }
@@ -204,7 +204,7 @@ function toCodexMd(agentsContent: string): string {
 
   sections.push('');
   sections.push('---');
-  sections.push(`*Synced from AGENTS.md by [RepoLens AI](https://github.com/repolens/repolens-ai) on ${new Date().toISOString().split('T')[0]}*`);
+  sections.push(`*Synced from AGENTS.md by [RepoLens AI](https://github.com/Harry-Kien/repolens-ai) on ${new Date().toISOString().split('T')[0]}*`);
 
   return sections.join('\n');
 }

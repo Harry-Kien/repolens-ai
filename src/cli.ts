@@ -27,7 +27,7 @@ program
     '  Visual UI:    repolens dashboard\n\n' +
     '  Your AI agents are only as good as the context you give them.'
   )
-  .version('3.1.0');
+  .version('3.1.1');
 
 program
   .command('setup')

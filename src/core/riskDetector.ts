@@ -41,7 +41,8 @@ export async function detectRisks(cwd: string): Promise<RiskReport> {
   const ignore = getGlobIgnorePatterns();
 
   // 1. Check for .env files
-  const envFiles = await fg('**/.env*', { cwd, ignore, dot: true });
+  const envIgnore = ignore.filter((pattern) => !pattern.includes('.env'));
+  const envFiles = await fg('**/.env*', { cwd, ignore: envIgnore, dot: true });
   for (const f of envFiles) {
     if (!f.endsWith('.example') && !f.endsWith('.sample')) {
       risks.push({ level: 'high', category: 'security', message: `.env file found — may contain secrets`, file: f });

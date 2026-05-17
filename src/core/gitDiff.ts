@@ -1,5 +1,6 @@
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { maskSecrets } from '../utils/masks.js';
+import { safely } from '../utils/errors.js';
 
 export interface GitDiffResult {
   isGitRepo: boolean;
@@ -39,54 +40,40 @@ export function analyzeGitDiff(cwd: string): GitDiffResult {
     summary: '',
   };
 
-  try {
-    // Check if git repo
-    execSync('git rev-parse --is-inside-work-tree', { cwd, stdio: 'pipe' });
-    result.isGitRepo = true;
-  } catch {
+  result.isGitRepo = safely(
+    () => runGit(cwd, ['rev-parse', '--is-inside-work-tree']) === 'true',
+    false,
+    'gitDiff:isGitRepo',
+  );
+
+  if (!result.isGitRepo) {
     result.summary = 'Not a git repository';
     return result;
   }
 
-  try {
-    // Get changed files (staged + unstaged)
-    const namesOutput = execSync('git diff --name-only HEAD 2>nul || git diff --name-only', {
-      cwd, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'],
-    }).trim();
+  const diffRead = safely(() => {
+    const namesOutput = runGitWithFallback(cwd, ['diff', '--name-only', 'HEAD'], ['diff', '--name-only'], 'gitDiff:names');
     result.changedFiles = namesOutput ? namesOutput.split('\n').filter(Boolean) : [];
 
-    // Also check staged
-    const stagedOutput = execSync('git diff --cached --name-only', {
-      cwd, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'],
-    }).trim();
+    const stagedOutput = runGit(cwd, ['diff', '--cached', '--name-only']);
     const stagedFiles = stagedOutput ? stagedOutput.split('\n').filter(Boolean) : [];
-    const untrackedOutput = execSync('git ls-files --others --exclude-standard', {
-      cwd, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'],
-    }).trim();
+    const untrackedOutput = runGit(cwd, ['ls-files', '--others', '--exclude-standard']);
     const untrackedFiles = untrackedOutput ? untrackedOutput.split('\n').filter(Boolean) : [];
     result.changedFiles = [...new Set([...result.changedFiles, ...stagedFiles, ...untrackedFiles])];
 
     if (result.changedFiles.length === 0) {
       result.summary = 'No uncommitted changes detected';
-      return result;
+      return true;
     }
 
     // Get diff stat
-    try {
-      result.diffStat = maskSecrets(
-        execSync('git diff --stat HEAD 2>nul || git diff --stat', {
-          cwd, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'],
-        }).trim()
-      );
-    } catch { /* stat not critical */ }
+    result.diffStat = maskSecrets(
+      runGitWithFallback(cwd, ['diff', '--stat', 'HEAD'], ['diff', '--stat'], 'gitDiff:stat'),
+    );
 
     // Get full diff (limited to 50KB)
-    try {
-      const rawDiff = execSync('git diff HEAD 2>nul || git diff', {
-        cwd, encoding: 'utf-8', maxBuffer: 1024 * 1024, stdio: ['pipe', 'pipe', 'pipe'],
-      });
-      result.fullDiff = maskSecrets(rawDiff.substring(0, 50_000));
-    } catch { /* diff not critical */ }
+    const rawDiff = runGitWithFallback(cwd, ['diff', 'HEAD'], ['diff'], 'gitDiff:full', 1024 * 1024);
+    result.fullDiff = maskSecrets(rawDiff.substring(0, 50_000));
 
     // Detect dangerous changes
     for (const file of result.changedFiles) {
@@ -98,17 +85,18 @@ export function analyzeGitDiff(cwd: string): GitDiffResult {
     }
 
     // Check for deleted test files
-    try {
-      const deletedOutput = execSync('git diff --diff-filter=D --name-only HEAD 2>nul || git diff --diff-filter=D --name-only', {
-        cwd, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'],
-      }).trim();
-      const deleted = deletedOutput ? deletedOutput.split('\n').filter(Boolean) : [];
-      for (const f of deleted) {
-        if (/\.(test|spec)\./i.test(f)) {
-          result.dangerousChanges.push({ level: 'high', message: 'Test file deleted', file: f });
-        }
+    const deletedOutput = runGitWithFallback(
+      cwd,
+      ['diff', '--diff-filter=D', '--name-only', 'HEAD'],
+      ['diff', '--diff-filter=D', '--name-only'],
+      'gitDiff:deleted',
+    );
+    const deleted = deletedOutput ? deletedOutput.split('\n').filter(Boolean) : [];
+    for (const f of deleted) {
+      if (/\.(test|spec)\./i.test(f)) {
+        result.dangerousChanges.push({ level: 'high', message: 'Test file deleted', file: f });
       }
-    } catch { /* not critical */ }
+    }
 
     // Check diff content for dangerous patterns
     if (result.fullDiff) {
@@ -121,9 +109,34 @@ export function analyzeGitDiff(cwd: string): GitDiffResult {
     }
 
     result.summary = `${result.changedFiles.length} file(s) changed, ${result.dangerousChanges.length} potential risk(s)`;
-  } catch {
+    return true;
+  }, false, 'gitDiff:read');
+
+  if (!diffRead) {
     result.summary = 'Unable to read git diff';
   }
 
   return result;
+}
+
+function runGit(cwd: string, args: string[], maxBuffer = 1024 * 1024): string {
+  return execFileSync('git', args, {
+    cwd,
+    encoding: 'utf-8',
+    maxBuffer,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  }).trim();
+}
+
+function runGitWithFallback(
+  cwd: string,
+  primaryArgs: string[],
+  fallbackArgs: string[],
+  context: string,
+  maxBuffer?: number,
+): string {
+  const primary = safely(() => runGit(cwd, primaryArgs, maxBuffer), null, `${context}:primary`);
+  if (primary !== null) return primary;
+
+  return safely(() => runGit(cwd, fallbackArgs, maxBuffer), '', `${context}:fallback`);
 }

@@ -346,7 +346,7 @@ function render() {
     html += '</div></div>';
   }
 
-  html += '<div class="footer">RepoLens AI v2.0 · The AI Context Intelligence Platform · <a href="https://github.com/repolens/repolens-ai" style="color:var(--accent)">GitHub</a></div>';
+  html += '<div class="footer">RepoLens AI v3.1 · The AI Context Intelligence Platform · <a href="https://github.com/Harry-Kien/repolens-ai" style="color:var(--accent)">GitHub</a></div>';
   html += '</div>';
 
   document.getElementById('app').innerHTML = html;
